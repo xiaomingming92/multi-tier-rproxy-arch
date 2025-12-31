@@ -2,7 +2,7 @@
  * @Author       : wujixmm
  * @Date         : 2025-12-29 09:42:07
  * @LastEditors  : wujixmm wujixmm@gmail.com
- * @LastEditTime : 2025-12-29 15:55:03
+ * @LastEditTime : 2025-12-31 14:47:57
  * @FilePath     : /intranetPenet/docker.md
  * @Description  : 
  * 
@@ -61,8 +61,11 @@ docker ps -a
 docker run -d \
   --name dev-nginx \
   -p 80:80 \
+  -v /$HOME/Sites/nginx/nginx.conf:/etc/nginx/nginx.conf \
   -v /$HOME/Sites/nginx/conf.d:/etc/nginx/conf.d:ro \
   -v /$HOME/Sites/nginx/log:/var/log/nginx \
   -v /$HOME/Sites/html:/usr/share/nginx/html:ro \
+  -v /etc/localtime:/etc/localtime:ro \
+  -v /etc/timezone:/etc/timezone:ro \
   nginx:latest
 ```
