@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:latest
+    container_name: gitlab
+    restart: always
+    ports:
+      - "8080:80"    # HTTP 端口
+      - "8443:443"   # HTTPS 端口
+      - "2222:22"    # SSH 端口（避免与宿主机 22 冲突）
+    volumes:
+      - ./gitlab/config:/etc/gitlab
+      - ./gitlab/logs:/var/log/gitlab
+      - ./gitlab/data:/var/opt/gitlab
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://gitlab.silktec.site:8080'
+        gitlab_rails['gitlab_shell_ssh_port'] = 2222
+    networks:
+      - compose-network
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    restart: always
+    ports:
+      - "8081:8080"  # Jenkins Web 端口
+      - "50000:50000" # Jenkins 代理端口
+    volumes:
+      - ./jenkins/data:/var/jenkins_home
+    user: root  # 避免权限问题
+    environment:
+      - JENKINS_OPTS="--prefix=/jenkins"
+      - JENKINS_URL=http://jenkins.silktec.site:8081/jenkins
+    networks:
+      - compose-network
+
+networks:
+  compose-network:
+    driver: bridge

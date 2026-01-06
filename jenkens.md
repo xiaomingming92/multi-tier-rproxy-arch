@@ -2,7 +2,7 @@
  * @Author       : wujixmm
  * @Date         : 2025-12-29 09:50:48
  * @LastEditors  : wujixmm wujixmm@gmail.com
- * @LastEditTime : 2025-12-29 14:41:41
+ * @LastEditTime : 2025-12-30 16:06:39
  * @FilePath     : /intranetPenet/jenkens.md
  * @Description  : 
  * 
@@ -34,3 +34,5 @@ sudo nano /etc/systemd/system/jenkins.service.d/override.conf
 Environment="JENKINS_PORT=8081"
 
 ````
+
+jenkinstoken :1179d37d9c567996aaad1dad1bb11b86d9
