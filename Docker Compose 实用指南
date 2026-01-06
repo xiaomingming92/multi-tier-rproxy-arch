@@ -1,0 +1,86 @@
+# Docker Compose 实用指南
+## 一、Docker Compose 核心概念
+Docker Compose 是 Docker 官方提供的多容器编排工具，通过一个 `docker-compose.yml` YAML 配置文件定义所有服务（容器）的参数，仅需单条命令即可完成多容器的创建、启动、停止、销毁等全生命周期管理。
+
+### 核心优势
+1. 简化多容器部署：无需手动逐个启动容器，一次配置、一键启停
+2. 环境一致性：配置文件可版本化管理，保证开发/测试/生产环境一致
+3. 容器隔离与互通：自动管理容器网络，服务间可通过服务名直接通信
+4. 独立生命周期：单个服务故障不会导致其他服务停止
+
+## 二、基础使用流程
+### 1. 环境准备
+- Docker Desktop（Windows/macOS）：自带 Compose，无需额外安装
+- Linux 系统：
+  ```bash
+  # 安装 Compose
+  sudo apt-get install docker-compose-plugin
+  # 验证安装
+  docker compose version
+  ```
+### 2. 核心配置文件：docker-compose.yml
+```yml
+version: '3.8'  # Compose 文件版本（推荐 3.8，兼容主流 Docker 版本）
+
+# 定义网络（可选，默认自动创建）
+networks:
+  my-network:
+    driver: bridge
+
+# 定义数据卷（可选，用于数据持久化）
+volumes:
+  gitlab-data:
+  jenkins-data:
+
+# 定义服务（核心：每个服务对应一个容器）
+services:
+  # 示例1：GitLab 服务
+  gitlab:
+    image: gitlab/gitlab-ce:latest  # 镜像名称（GitLab 社区版，免费无授权）
+    container_name: gitlab         # 容器自定义名称
+    ports:
+      - "80:80"    # 端口映射：宿主机端口:容器端口
+      - "2222:22"
+    volumes:
+      - gitlab-data:/var/opt/gitlab  # 数据卷挂载（持久化 GitLab 数据）
+    networks:
+      - my-network                   # 加入自定义网络
+    restart: unless-stopped          # 重启策略：除非手动停止，否则故障自动重启
+
+  # 示例2：Jenkins 服务
+  jenkins:
+    image: jenkins/jenkins:lts       # Jenkins LTS 版（生产环境首选，免费无授权）
+    container_name: jenkins
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins-data:/var/jenkins_home  # 持久化 Jenkins 配置/插件
+    networks:
+      - my-network
+    restart: unless-stopped
+    user: "root"  # 解决权限问题（可选）
+```
+核心字段说明
+字段	作用
+version	指定 Compose 文件版本，需与 Docker 版本兼容
+services	定义所有容器服务，每个子项对应一个容器
+image	容器使用的镜像名称（支持官方 / 私有镜像）
+container_name	自定义容器名称，避免自动生成随机名
+ports	端口映射，格式：宿主机端口:容器端口
+volumes	数据卷挂载，实现数据持久化，格式：数据卷名:容器内路径
+networks	指定容器所属网络，同一网络内的服务可通过服务名互通
+restart	重启策略：always（始终重启）/unless-stopped（除非手动停止）/no（不重启）
+environment	设置容器环境变量，格式：KEY=VALUE
+depends_on	定义服务启动顺序（仅保证启动顺序，不保证服务就绪）
+### 3. 常用命令
+命令	作用
+docker compose up -d	后台启动所有服务（-d 表示后台运行）
+docker compose down	停止并删除所有容器、网络（保留数据卷）
+docker compose down -v	停止并删除容器、网络、数据卷（谨慎使用，会丢失数据）
+docker compose start	启动已创建的服务
+docker compose stop	停止服务（保留容器，不删除）
+docker compose restart	重启指定服务（如 docker compose restart jenkins）
+docker compose ps	查看所有服务状态
+docker compose logs -f	实时查看所有服务日志（-f 跟踪日志），可指定服务名（如 logs -f gitlab）
+docker compose exec 服务名 命令	进入容器执行命令（如 docker compose exec jenkins bash）
